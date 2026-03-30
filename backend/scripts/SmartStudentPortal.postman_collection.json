@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "Smart Student Portal API",
+    "description": "Complete API collection for Smart Student Portal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test Student\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@1234\",\n  \"role\": \"student\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const json = pm.response.json();",
+            "if(json.data?.accessToken) pm.collectionVariables.set('accessToken', json.data.accessToken);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"student@demo.com\",\n  \"password\": \"Student@123\"\n}" }
+          }
+        },
+        { "name": "Get Me", "request": { "method": "GET", "url": "{{baseUrl}}/auth/me", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Refresh Token", "request": { "method": "POST", "url": "{{baseUrl}}/auth/refresh" } },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/auth/forgot-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"email\": \"student@demo.com\" }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Get Dashboard", "request": { "method": "GET", "url": "{{baseUrl}}/dashboard", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        { "name": "Get All Assignments", "request": { "method": "GET", "url": "{{baseUrl}}/assignments", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Get Assignment by ID", "request": { "method": "GET", "url": "{{baseUrl}}/assignments/:id", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Create Assignment (Teacher)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/assignments",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": { "mode": "formdata", "formdata": [
+              { "key": "title", "value": "Test Assignment" },
+              { "key": "description", "value": "Assignment description here" },
+              { "key": "courseId", "value": "REPLACE_WITH_COURSE_ID" },
+              { "key": "dueDate", "value": "2025-12-31T23:59:00" },
+              { "key": "totalMarks", "value": "100" }
+            ]}
+          }
+        },
+        {
+          "name": "Submit Assignment (Student)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/assignments/:id/submit",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "textContent", "value": "My assignment answer here..." }] }
+          }
+        },
+        {
+          "name": "Grade Submission (Teacher)",
+          "request": {
+            "method": "PUT", "url": "{{baseUrl}}/assignments/:id/submissions/:submissionId/grade",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"marks\": 85, \"feedback\": \"Good work! Well structured answer.\" }" }
+          }
+        },
+        { "name": "Check Plagiarism", "request": { "method": "POST", "url": "{{baseUrl}}/assignments/:id/submissions/:submissionId/plagiarism", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Quizzes",
+      "item": [
+        { "name": "Get All Quizzes", "request": { "method": "GET", "url": "{{baseUrl}}/quizzes", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Get Quiz by ID", "request": { "method": "GET", "url": "{{baseUrl}}/quizzes/:id", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Create Quiz (Teacher)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/quizzes",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Sample Quiz\",\n  \"courseId\": \"REPLACE_WITH_COURSE_ID\",\n  \"timeLimit\": 20,\n  \"dueDate\": \"2025-12-31T23:59:00\",\n  \"questions\": [\n    {\n      \"questionText\": \"What is 2+2?\",\n      \"options\": [\"3\", \"4\", \"5\", \"6\"],\n      \"correctAnswer\": 1,\n      \"marks\": 1\n    }\n  ]\n}" }
+          }
+        },
+        { "name": "Start Quiz Attempt", "request": { "method": "POST", "url": "{{baseUrl}}/quizzes/:id/attempt", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Submit Quiz Attempt",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/quizzes/:id/attempt/:attemptId/submit",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"answers\": [{ \"questionIndex\": 0, \"selectedOption\": 1 }] }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Mark Attendance (Teacher)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/attendance",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"courseId\": \"REPLACE_WITH_COURSE_ID\",\n  \"date\": \"2025-03-20\",\n  \"records\": [\n    { \"studentId\": \"STUDENT_ID\", \"status\": \"present\" }\n  ]\n}" }
+          }
+        },
+        { "name": "My Attendance (Student)", "request": { "method": "GET", "url": "{{baseUrl}}/attendance/my", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Course Attendance (Teacher)", "request": { "method": "GET", "url": "{{baseUrl}}/attendance/course/:courseId", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        { "name": "Get All Courses", "request": { "method": "GET", "url": "{{baseUrl}}/courses", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/courses",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Course\",\n  \"code\": \"NC101\",\n  \"description\": \"Course description\",\n  \"semester\": \"Spring 2025\",\n  \"credits\": 3\n}" }
+          }
+        },
+        {
+          "name": "Enroll in Course (Student)",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/courses/enroll",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"courseId\": \"REPLACE_WITH_COURSE_ID\" }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Materials",
+      "item": [
+        { "name": "Get Materials", "request": { "method": "GET", "url": "{{baseUrl}}/materials", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Upload Material",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/materials",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": { "mode": "formdata", "formdata": [
+              { "key": "title", "value": "Lecture Slides Week 1" },
+              { "key": "courseId", "value": "REPLACE_WITH_COURSE_ID" },
+              { "key": "type", "value": "pdf" },
+              { "key": "file", "type": "file", "src": "" }
+            ]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        { "name": "Get Chat Users", "request": { "method": "GET", "url": "{{baseUrl}}/chat/users", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Get Messages", "request": { "method": "GET", "url": "{{baseUrl}}/chat/messages/:userId", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/chat/messages",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"content\": \"Hello!\", \"receiverId\": \"REPLACE_WITH_USER_ID\" }" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "Get Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/notifications", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Mark All Read", "request": { "method": "PUT", "url": "{{baseUrl}}/notifications/mark-all-read", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Calendar",
+      "item": [
+        { "name": "Get Events", "request": { "method": "GET", "url": "{{baseUrl}}/calendar?month=3&year=2025", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        { "name": "Get All Users", "request": { "method": "GET", "url": "{{baseUrl}}/admin/users?page=1&limit=20", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        { "name": "Get Reports", "request": { "method": "GET", "url": "{{baseUrl}}/admin/reports", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT", "url": "{{baseUrl}}/admin/users/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"isActive\": false }" }
+          }
+        },
+        { "name": "Delete User", "request": { "method": "DELETE", "url": "{{baseUrl}}/admin/users/:id", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }] } }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        { "name": "Health Check", "request": { "method": "GET", "url": "{{baseUrl}}/health" } }
+      ]
+    }
+  ]
+}
