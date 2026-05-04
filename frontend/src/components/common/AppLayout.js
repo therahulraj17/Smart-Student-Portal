@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import AIChat from './AIChat';
 import {
   HomeIcon, ClipboardDocumentListIcon, QuestionMarkCircleIcon,
   CalendarDaysIcon, BookOpenIcon, ChatBubbleLeftRightIcon,
@@ -192,6 +193,9 @@ export default function AppLayout() {
           </div>
         </main>
       </div>
+
+      {/* AI Chat Bubble */}
+      <AIChat />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { AIProvider } from './context/AIContext';
 import LoadingScreen from './components/common/LoadingScreen';
 import AppLayout from './components/common/AppLayout';
 
@@ -79,8 +80,10 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <SocketProvider>
-          <AppRoutes />
-          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontFamily: 'DM Sans, sans-serif' } }} />
+          <AIProvider>
+            <AppRoutes />
+            <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontFamily: 'DM Sans, sans-serif' } }} />
+          </AIProvider>
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
