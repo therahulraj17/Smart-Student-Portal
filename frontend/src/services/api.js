@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://smart-student-portal-6og7.onrender.com';
+const API_URL = 'https://smart-student-portal-6og7.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
