@@ -3,6 +3,8 @@ import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
@@ -19,7 +21,7 @@ export const SocketProvider = ({ children }) => {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    socketRef.current = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000', {
+    socketRef.current = io(SOCKET_URL, {
       auth: { token },
       reconnection: true,
       reconnectionDelay: 1000,

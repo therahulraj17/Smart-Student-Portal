@@ -1,4 +1,11 @@
 const logger = require('../utils/logger');
+const AIConversation = require('../models/AIConversation');
+
+const getNimConfig = () => ({
+  baseUrl: process.env.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+  apiKey: process.env.NVIDIA_NIM_API_KEY,
+  model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-405b-instruct',
+});
 
 /**
  * Send message to NVIDIA NIM AI
@@ -12,9 +19,11 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    if (!process.env.NVIDIA_NIM_API_KEY) {
+    const { baseUrl, apiKey, model } = getNimConfig();
+
+    if (!apiKey) {
       logger.error('NVIDIA_NIM_API_KEY not configured');
-      return res.status(500).json({ error: 'AI service not configured' });
+      return res.status(503).json({ error: 'AI service not configured' });
     }
 
     // Build conversation with system prompt
@@ -36,15 +45,15 @@ The current user is a ${req.user?.role || 'student'} in the Smart Student Portal
 
     // Call NVIDIA NIM API
     const response = await fetch(
-      `${process.env.NVIDIA_NIM_BASE_URL}/chat/completions`,
+      `${baseUrl}/chat/completions`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.NVIDIA_NIM_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-405b-instruct',
+          model,
           messages,
           temperature: 0.7,
           top_p: 0.9,
@@ -65,6 +74,24 @@ The current user is a ${req.user?.role || 'student'} in the Smart Student Portal
     const data = await response.json();
     const aiMessage = data.choices[0]?.message?.content || 'No response generated';
 
+    await AIConversation.findOneAndUpdate(
+      { userId: req.user._id },
+      {
+        $set: { lastMessageAt: new Date() },
+        $setOnInsert: { userId: req.user._id },
+        $push: {
+          messages: {
+            $each: [
+              { role: 'user', content: message },
+              { role: 'assistant', content: aiMessage },
+            ],
+            $slice: -100,
+          },
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
     logger.info(`AI Response generated for user ${req.user?.id}`);
 
     res.json({
@@ -83,10 +110,10 @@ The current user is a ${req.user?.role || 'student'} in the Smart Student Portal
  */
 exports.getHistory = async (req, res) => {
   try {
-    // If you want to store conversation history in DB, implement here
+    const conversation = await AIConversation.findOne({ userId: req.user._id }).lean();
+
     res.json({
-      message: 'Conversation history endpoint',
-      note: 'Currently conversations are stored client-side only',
+      messages: conversation?.messages || [],
     });
   } catch (error) {
     logger.error('History retrieval error:', error);
@@ -100,9 +127,9 @@ exports.getHistory = async (req, res) => {
  */
 exports.clearHistory = async (req, res) => {
   try {
+    await AIConversation.deleteOne({ userId: req.user._id });
     res.json({
       message: 'Conversation cleared',
-      note: 'Frontend should clear its state',
     });
   } catch (error) {
     logger.error('Clear history error:', error);
