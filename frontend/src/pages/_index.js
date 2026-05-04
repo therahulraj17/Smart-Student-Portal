@@ -1,5 +1,9 @@
-export { default as AssignmentDetailPage } from './AssignmentDetail';
+// ═══════════════════════════════════════════════════════════════════════════════
+// pages/AssignmentDetail.js
+// ═══════════════════════════════════════════════════════════════════════════════
+import React, { useEffect, useState, useCallback } from 'react';
+export { default as AssignmentDetailPage } from './AssignmentDetailFull';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Barrel export for pages that still import from the legacy index file.
+// This file intentionally re-exports — real file is below.
 // ═══════════════════════════════════════════════════════════════════════════════

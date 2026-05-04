@@ -5,12 +5,12 @@ import { chatAPI } from '../services/api';
 import { Spinner } from '../components/common/UI';
 import { PaperAirplaneIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { Message as MessageModel } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function Chat() {
   const { user } = useAuth();
-  const socket = useSocket();
-  const { onEvent, joinRoom, leaveRoom, emitTyping, emitStopTyping } = socket || {};
+  const { onEvent, sendMessage: socketSend, joinRoom, leaveRoom, emitTyping, emitStopTyping } = useSocket() || {};
   const [chatUsers, setChatUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);

@@ -16,11 +16,6 @@ const initSocket = (server) => {
   // ── Auth middleware for sockets ──────────────────────────────────────────
   io.use((socket, next) => {
     try {
-      if (!process.env.JWT_ACCESS_SECRET) {
-        logger.error('JWT_ACCESS_SECRET is not configured');
-        return next(new Error('Authentication error: Server misconfigured'));
-      }
-
       const token = socket.handshake.auth?.token ||
                     socket.handshake.headers?.authorization?.split(' ')[1];
       if (!token) return next(new Error('Authentication error: No token'));

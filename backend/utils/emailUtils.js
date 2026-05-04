@@ -1,18 +1,7 @@
 const nodemailer = require('nodemailer');
 const logger = require('./logger');
 
-const isEmailConfigured = () => Boolean(
-  process.env.EMAIL_HOST &&
-  process.env.EMAIL_USER &&
-  process.env.EMAIL_PASS &&
-  process.env.EMAIL_FROM
-);
-
 const createTransporter = () => {
-  if (!isEmailConfigured()) {
-    throw new Error('Email service is not configured');
-  }
-
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT) || 587,

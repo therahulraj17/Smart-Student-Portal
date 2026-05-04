@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { adminAPI, dashboardAPI } from '../services/api';
-import { Card, StatCard, PageHeader, ProgressBar, Spinner } from '../components/common/UI';
+import { dashboardAPI } from '../services/api';
+import { Card, StatCard, PageHeader, Badge, ProgressBar, Spinner } from '../components/common/UI';
 import {
   ClipboardDocumentListIcon, QuestionMarkCircleIcon, AcademicCapIcon,
   BellIcon, ChartBarIcon, UserGroupIcon, CheckCircleIcon,
@@ -18,7 +18,6 @@ const STATUS_COLOR = { submitted: 'blue', graded: 'green', late: 'red', pending:
 export default function Dashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
-  const [reports, setReports] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,13 +26,6 @@ export default function Dashboard() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    if (user?.role !== 'admin') return;
-    adminAPI.getReports()
-      .then((r) => setReports(r.data.data))
-      .catch(() => setReports(null));
-  }, [user?.role]);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -58,7 +50,7 @@ export default function Dashboard() {
       {user?.role === 'teacher' && <TeacherDashboard data={data} />}
 
       {/* ── ADMIN DASHBOARD ── */}
-      {user?.role === 'admin' && <AdminDashboard data={data} reports={reports} />}
+      {user?.role === 'admin' && <AdminDashboard data={data} />}
     </div>
   );
 }
@@ -191,12 +183,10 @@ function TeacherDashboard({ data }) {
 }
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
-function AdminDashboard({ data, reports }) {
+function AdminDashboard({ data }) {
   const { stats } = data;
   const usersByRole = stats.usersByRole || [];
   const roleMap = Object.fromEntries(usersByRole.map((r) => [r._id, r.count]));
-  const activityLabels = buildReportLabels(reports);
-  const activityData = buildReportDatasets(reports, activityLabels);
 
   const chartData = {
     labels: ['Students', 'Teachers', 'Admins'],
@@ -227,70 +217,8 @@ function AdminDashboard({ data, reports }) {
           }} />
         </div>
       </Card>
-
-      <Card>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="font-display font-semibold text-surface-900">Activity Trends</h2>
-            <p className="text-xs text-surface-400">Last 30 days of growth and usage</p>
-          </div>
-          <div className="text-right text-xs text-surface-500">
-            <p>New users: {sumReportSeries(reports?.newUsers)}</p>
-            <p>Submissions: {sumReportSeries(reports?.submissions)}</p>
-            <p>Quiz attempts: {sumReportSeries(reports?.quizAttempts)}</p>
-          </div>
-        </div>
-
-        {activityLabels.length === 0 ? (
-          <p className="text-center text-sm text-surface-400 py-8">No activity data yet</p>
-        ) : (
-          <div className="h-72">
-            <Bar
-              data={{ labels: activityLabels, datasets: activityData }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'top' },
-                },
-                scales: {
-                  y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                  x: { grid: { display: false } },
-                },
-              }}
-            />
-          </div>
-        )}
-      </Card>
     </div>
   );
-}
-
-function buildReportLabels(reports) {
-  if (!reports) return [];
-  const labels = [
-    ...(reports.newUsers || []).map((item) => item._id),
-    ...(reports.submissions || []).map((item) => item._id),
-    ...(reports.quizAttempts || []).map((item) => item._id),
-  ];
-  return [...new Set(labels)].sort();
-}
-
-function buildReportDatasets(reports, labels) {
-  const toCountMap = (items = []) => Object.fromEntries(items.map((item) => [item._id, item.count]));
-  const newUsersMap = toCountMap(reports?.newUsers);
-  const submissionsMap = toCountMap(reports?.submissions);
-  const quizAttemptsMap = toCountMap(reports?.quizAttempts);
-
-  return [
-    { label: 'New Users', data: labels.map((label) => newUsersMap[label] || 0), backgroundColor: '#6366f1' },
-    { label: 'Submissions', data: labels.map((label) => submissionsMap[label] || 0), backgroundColor: '#10b981' },
-    { label: 'Quiz Attempts', data: labels.map((label) => quizAttemptsMap[label] || 0), backgroundColor: '#f59e0b' },
-  ];
-}
-
-function sumReportSeries(items = []) {
-  return items.reduce((total, item) => total + (item.count || 0), 0);
 }
 
 function getGreeting() {
