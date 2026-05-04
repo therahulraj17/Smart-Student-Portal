@@ -29,9 +29,6 @@ const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
-// ─── Trust Proxy ─────────────────────────────────────────────────────────────
-app.set('trust proxy', 1);
-
 // ─── Security Middleware ─────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
