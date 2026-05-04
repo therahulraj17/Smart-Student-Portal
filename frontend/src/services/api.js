@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+const API_URL = 'https://smart-student-portal-6og7.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
