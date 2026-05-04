@@ -29,6 +29,10 @@ const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
+// Render sits behind a proxy, so rate limiting and client IP detection need
+// forwarded headers to be trusted.
+app.set('trust proxy', 1);
+
 // ─── Security Middleware ─────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,

@@ -36,6 +36,13 @@ const errorHandler = (err, req, res, next) => {
   let message = err.message || 'Internal Server Error';
   let errors = err.errors || null;
 
+  // Invalid JSON payloads from express.json()
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    statusCode = 400;
+    message = 'Invalid JSON payload';
+    err.isOperational = true;
+  }
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
     statusCode = 400;
