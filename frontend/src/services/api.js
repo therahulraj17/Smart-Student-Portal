@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_URL = 'https://smart-student-portal-6og7.onrender.com/api';
+const DEFAULT_API_URL = 'https://smart-student-portal-6og7.onrender.com/api';
+const isLocalHost = typeof window !== 'undefined'
+  && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+
+const API_URL = process.env.REACT_APP_API_URL || (isLocalHost ? 'http://localhost:5000/api' : DEFAULT_API_URL);
 
 const api = axios.create({
   baseURL: API_URL,

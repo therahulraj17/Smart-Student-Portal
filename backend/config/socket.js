@@ -7,7 +7,9 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      origin: process.env.NODE_ENV === 'production'
+        ? (process.env.CLIENT_URL || 'https://smart-student-portal-6og7.onrender.com')
+        : true,
       credentials: true,
     },
     pingTimeout: 60000,

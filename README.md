@@ -134,17 +134,12 @@ npm install
 
 ### Step 2 — Environment Variables
 
+#### Backend
 ```bash
-# Backend
 cd backend
 cp .env.example .env
 # Edit .env with your MongoDB URI, JWT secrets, email config
 nano .env
-
-# Frontend
-cd ../frontend
-cp .env.example .env
-# Edit if your backend runs on a different port
 ```
 
 **Minimum required `.env` for backend:**
@@ -156,6 +151,25 @@ JWT_ACCESS_SECRET=changeme_min32chars_xxxxxxxxxxxxxxxx
 JWT_REFRESH_SECRET=changeme_min32chars_yyyyyyyyyyyyyyyy
 CLIENT_URL=http://localhost:3000
 ```
+
+#### Frontend — Local Development
+```bash
+cd ../frontend
+cp .env.example .env.local
+```
+
+**The frontend auto-detects localhost and uses local endpoints by default:**
+- When running on `localhost`, `127.0.0.1`, or `::1` → connects to `http://localhost:5000`
+- When running on any other domain → falls back to the deployed API (`https://smart-student-portal-6og7.onrender.com`)
+- Both behaviors respect `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL` env vars if explicitly set
+
+**`.env.local` for custom backend port (optional):**
+```env
+REACT_APP_API_URL=http://localhost:5001/api
+REACT_APP_SOCKET_URL=http://localhost:5001
+```
+
+**Note:** Git ignores `.env.local`, so your local overrides won't affect deployments.
 
 ### Step 3 — Create Uploads & Logs Directories
 
@@ -193,6 +207,23 @@ npm start
 ```
 
 Open **http://localhost:3000** in your browser.
+
+---
+
+### 📍 Local vs. Deployment Behavior
+
+| Environment | API Endpoint | Socket Endpoint |
+|---|---|---|
+| Local (`localhost:3000`) | `http://localhost:5000/api` | `http://localhost:5000` |
+| Production (any other domain) | `https://smart-student-portal-6og7.onrender.com/api` | `https://smart-student-portal-6og7.onrender.com` |
+
+**Why this works:**
+- The **frontend auto-detects your hostname** and picks the correct backend.
+- **No env file needed for local runs** — just install, seed, and run.
+- **Deployments talk to Render by default** unless you override with env vars.
+- **Socket.io in development** accepts connections from any origin; in production, it restricts to `CLIENT_URL`.
+
+This design lets you run locally and deploy to production without changing code or env config.
 
 ---
 

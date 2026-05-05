@@ -4,6 +4,9 @@ import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
 const SocketContext = createContext(null);
+const DEFAULT_SOCKET_URL = 'https://smart-student-portal-6og7.onrender.com';
+const isLocalHost = typeof window !== 'undefined'
+  && ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
 
 export const SocketProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -19,7 +22,7 @@ export const SocketProvider = ({ children }) => {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    socketRef.current = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000', {
+    socketRef.current = io(process.env.REACT_APP_SOCKET_URL || (isLocalHost ? 'http://localhost:5000' : DEFAULT_SOCKET_URL), {
       auth: { token },
       reconnection: true,
       reconnectionDelay: 1000,
